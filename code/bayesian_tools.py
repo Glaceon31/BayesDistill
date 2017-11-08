@@ -7,8 +7,21 @@ import copy
 import os
 import cPickle
 
+# paths
+multibleu = "~/preprocess_MT/multi-bleu.perl"
+DEV = "/data/disk1/share/zjc/nist_thulac/dev_test/nist06"
+src = DEV+'/nist06.cn'
+ref = DEV+'/nist06.en'
+DEV_split = "/data/disk1/share/zjc/nist_thulac/dev_test/nist06_split"
+src_100 = DEV_split+'/nist06_100.cn'
+ref_100 = DEV_split+'/nist06_100.en'
+src_rem = DEV_split+'/nist06_rem.cn'
+ref_rem = DEV_split+'/nist06_rem.en'
+translator = '~/git/THUMT_171010/thumt/translate.py'
+mapping = '/data/disk1/share/zjc/wmt17/exp/dict_zhen/zhen_1710.mapping'
+
+
 def multi_bleu(hypo,ref,evalpath):
-	multibleu = "~/preprocess_MT/multi-bleu.perl"
 	cmd = 'perl '+multibleu+' -lc '+ref+' < '+hypo+' > '+evalpath
 	print cmd
 	os.system(cmd)
@@ -55,19 +68,13 @@ def evaluate_MT_linear(vec, norm=False, device='cpu'):
 	if norm:
 		vec = vec/sum(vec)
 	# paths
-	src = '/data/disk1/share/zjc/nist_thulac/dev_test/nist06/nist06.cn'
-	ref = '/data/disk1/share/zjc/nist_thulac/dev_test/nist06/nist06.en'
 	trg = 'model/'+identifier+'.trans'
 	modelpath = 'model/'+identifier+'.npz'
 	modellog = 'model/'+identifier+'.log'
 	evalpath='model/'+identifier+'.eval'
-	src_100 = '/data/disk1/share/zjc/nist_thulac/dev_test/nist06_split/nist06_100.cn'
-	ref_100 = '/data/disk1/share/zjc/nist_thulac/dev_test/nist06_split/nist06_100.en'
 	trg_100 = 'model_split/'+identifier+'_100.trans'
 	modellog_100 = 'model_split/'+identifier+'_100.log'
 	evalpath_100 ='model_split/'+identifier+'_100.eval'
-	src_rem = '/data/disk1/share/zjc/nist_thulac/dev_test/nist06_split/nist06_rem.cn'
-	ref_rem = '/data/disk1/share/zjc/nist_thulac/dev_test/nist06_split/nist06_rem.en'
 	trg_rem = 'model_split/'+identifier+'_rem.trans'
 	modellog_rem = 'model_split/'+identifier+'_rem.log'
 	evalpath_rem ='model_split/'+identifier+'_rem.eval'
@@ -104,8 +111,6 @@ def evaluate_MT_linear(vec, norm=False, device='cpu'):
 		numpy.savez(modelpath, **model)
 		
 		# translate
-		translator = '~/git/THUMT_171010/thumt/translate.py'
-		mapping = '/data/disk1/share/zjc/wmt17/exp/dict_zhen/zhen_1710.mapping'
 		# translate first 100 sentences
 		if not os.path.exists(trg_100):
 			print 'translating 100 sentences'
@@ -117,7 +122,7 @@ def evaluate_MT_linear(vec, norm=False, device='cpu'):
 		# translate remaining sentences
 		if result_100 > 25.:
 			print 'not too bad, decoding remaining...'
-			cmd = 'THEANO_FLAGS=floatX=float32,lib.cnmem=0.2,device='+device+' python '+translator+' -i '+src+' -o '+trg+' -m '+modelpath+' -unk -ln -map '+mapping+' > '+modellog 
+			cmd = 'THEANO_FLAGS=floatX=float32,lib.cnmem=0.2,device='+device+' python '+translator+' -i '+src_rem+' -o '+trg_rem+' -m '+modelpath+' -unk -ln -map '+mapping+' > '+modellog_rem 
 			os.system(cmd)
 			# combine 
 			cmd = 'cat ' + trg_100 + ' ' + trg_rem +' > ' + trg
