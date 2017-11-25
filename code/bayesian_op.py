@@ -78,7 +78,7 @@ class DIRECT(object):
 			print >> elog, str(self.samples[i]) + '\t' + str(self.results[i])
 
 		# write iteration log
-		ilog = open('iterarion.log', 'w')
+		ilog = open('iteration.log', 'w')
 		for i in range(len(self.bests)):
 			print >> ilog, str(i) + '\t' + str(self.bests[i])
 
@@ -174,7 +174,7 @@ class DIRECT(object):
 			new_samples.append(newsample)
 			new_results.append(-1)
 		# synchorized evaluation
-		pool = ThreadPool(2)
+		pool = ThreadPool(1)
 		new_results = pool.map(evaluate, new_samples)
 		'''
 		for i in range(len(new_samples)):
